@@ -16,48 +16,48 @@ function showUsage() {
 
 function parseArgs() {
     let argv = process.argv;
-    for ( let i = 2 ; i < argv.length ; ) {
+    for (let i = 2; i < argv.length;) {
         let arg = argv[i++];
-        switch ( arg ) {
-        case '-h': 
-            showUsage();
-            process.exit(0);
-        case '-d':
-            if ( i < argv.length ) {
-                arg = argv[i++];
-                SAVE_PATH = arg;
-            } else {
+        switch (arg) {
+            case '-h':
                 showUsage();
-                console.error('-d <dir> argument is missing. (default: ./download)');
+                process.exit(0);
+            case '-d':
+                if (i < argv.length) {
+                    arg = argv[i++];
+                    SAVE_PATH = arg;
+                } else {
+                    showUsage();
+                    console.error('-d <dir> argument is missing. (default: ./download)');
+                    process.exit(-1);
+                }
+                break;
+            default:
+                showUsage();
+                console.error('Unknown argument: ', arg);
                 process.exit(-1);
-            }
-            break;
-        default:
-            showUsage();
-            console.error('Unknown argument: ', arg);
-            process.exit(-1);
         }
     }
 }
 
 function initDir() {
-    if ( !fs.existsSync(SAVE_PATH) ) {
-        fs.mkdirSync(SAVE_PATH);
+    if (!fs.existsSync(SAVE_PATH)) {
+        fs.mkdirSync(SAVE_PATH, { recursive: true });
     }
 }
 
 function processLine(line) {
     let parsed = url.parse(line);
-    if ( parsed.protocol !== 'http:' && parsed.protocol != 'https:' ) {
+    if (parsed.protocol !== 'http:' && parsed.protocol != 'https:') {
         console.log(`NOT URL: ${line}`);
         return;
     }
     let tokens = parsed.pathname.split(/[\/\\]/).map(token => token.trim()).filter(token => token !== '');
-    let file = tokens.length > 0 ? tokens[tokens.length-1] : '';
+    let file = tokens.length > 0 ? tokens[tokens.length - 1] : '';
     file = file ? file : (parsed.hostname + '.html');
     file = path.join(SAVE_PATH, file);
 
-    if ( fs.existsSync(file) ) {
+    if (fs.existsSync(file)) {
         console.log(`FILE EXISTS: ${file} (${line})`);
         return;
     }
@@ -83,7 +83,7 @@ function processLine(line) {
     req.on('error', error => {
         console.error(`REQ-ERR: ${file} (${line})`);
         console.error(error);
-        if ( ws ) {
+        if (ws) {
             ws.close();
             ws = null;
         }
